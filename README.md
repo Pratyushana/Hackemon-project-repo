@@ -23,7 +23,7 @@ GRACE (General-purpose Responsive Assistant for Computer Environment) is an AI-p
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/grace-voice-agent.git
+git clone https://github.com/Pratyushana/Hackemon-project-repo.git
 cd grace-voice-agent
 ```
 

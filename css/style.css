@@ -1,0 +1,96 @@
+/* Add GitHub Pages modal styles */
+.github-pages-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.github-pages-modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 650px;
+    width: 85%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transform: translateY(0);
+    animation: slideUp 0.3s ease-out;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.github-pages-modal-content h3 {
+    color: #e74c3c;
+    margin-top: 0;
+    font-size: 1.8rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.github-pages-modal-content p {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.github-pages-modal-content code {
+    background-color: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    border: 1px solid #ddd;
+    color: #e83e8c;
+    font-size: 0.9em;
+}
+
+.github-pages-modal-content ol {
+    padding-left: 20px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+}
+
+.github-pages-modal-content li {
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.close-modal-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    display: block;
+    margin-left: auto;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close-modal-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+} 

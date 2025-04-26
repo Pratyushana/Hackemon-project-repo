@@ -19,6 +19,11 @@ class GraceAppLauncher {
         this.config = config;
         console.log('GraceAppLauncher initialized with config:', this.config);
         this.initEventListeners();
+        
+        // Check if we're running on GitHub Pages
+        this.isGitHubPages = window.location.hostname.includes('github.io') || 
+                            window.location.hostname !== 'localhost';
+        console.log('Running on GitHub Pages:', this.isGitHubPages);
     }
 
     /**
@@ -66,6 +71,13 @@ class GraceAppLauncher {
         // Show loading state
         this.setButtonLoadingState(event.currentTarget, true);
         
+        // If we're on GitHub Pages, show a special message and return early
+        if (this.isGitHubPages) {
+            this.showGitHubPagesMessage();
+            this.setButtonLoadingState(event.currentTarget, false);
+            return;
+        }
+        
         try {
             // Try to launch the app via our API
             const launched = await this.launchApp();
@@ -97,6 +109,13 @@ class GraceAppLauncher {
         
         // Show loading state
         this.setButtonLoadingState(event.currentTarget, true);
+        
+        // If we're on GitHub Pages, show a special message and return early
+        if (this.isGitHubPages) {
+            this.showGitHubPagesMessage();
+            this.setButtonLoadingState(event.currentTarget, false);
+            return;
+        }
         
         try {
             // Try to launch the hand gesture module via our API
@@ -231,6 +250,66 @@ class GraceAppLauncher {
                 document.body.removeChild(messageEl);
             }, 500);
         }, 5000);
+    }
+
+    /**
+     * Show GitHub Pages specific message
+     */
+    showGitHubPagesMessage() {
+        // Show brief notification
+        const message = `This feature requires running the application locally.`;
+        this.showLaunchMessage(false, message);
+        
+        // Create a detailed modal with instructions
+        const modalEl = document.createElement('div');
+        modalEl.className = 'github-pages-modal';
+        modalEl.innerHTML = `
+            <div class="github-pages-modal-content">
+                <h3>Feature Not Available on GitHub Pages</h3>
+                <p>The GRACE Voice Agent and Hand Gesture features require a local Python server to run correctly.</p>
+                
+                <p><strong>Why this happens:</strong> GitHub Pages is a static web hosting service that doesn't support running Python applications or servers needed by GRACE.</p>
+                
+                <p><strong>To use these features:</strong></p>
+                <ol>
+                    <li>Clone the repository: <code>git clone https://github.com/Pratyushana/Hackemon-project-repo.git</code></li>
+                    <li>Navigate to the project directory: <code>cd Hackemon-project-repo</code></li>
+                    <li>Install required dependencies: <code>pip install -r requirements.txt</code></li>
+                    <li>Run the application: <code>python start_website.py</code></li>
+                </ol>
+                
+                <p>The application will then open in your default browser with full functionality.</p>
+                
+                <p><strong>Note:</strong> This demonstration website on GitHub Pages allows you to explore the features and download the code, but interactive features require local installation.</p>
+                
+                <button class="close-modal-btn">Got it</button>
+            </div>
+        `;
+        
+        // Add to document
+        document.body.appendChild(modalEl);
+        
+        // Add close button event
+        const closeBtn = modalEl.querySelector('.close-modal-btn');
+        closeBtn.addEventListener('click', () => {
+            document.body.removeChild(modalEl);
+        });
+        
+        // Add click outside to close
+        modalEl.addEventListener('click', (e) => {
+            if (e.target === modalEl) {
+                document.body.removeChild(modalEl);
+            }
+        });
+        
+        // Add keyboard escape to close
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                document.body.removeChild(modalEl);
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
     }
 }
 
