@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="400" viewBox="0 0 500 400">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5f7fa" />
+      <stop offset="100%" stop-color="#c3cfe2" />
+    </linearGradient>
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="500" height="400" fill="url(#bg-gradient)" />
+  
+  <!-- Abstract shapes -->
+  <circle cx="100" cy="100" r="70" fill="rgba(78, 84, 200, 0.1)" />
+  <circle cx="400" cy="120" r="60" fill="rgba(78, 84, 200, 0.1)" />
+  <circle cx="200" cy="300" r="90" fill="rgba(78, 84, 200, 0.1)" />
+  <circle cx="350" cy="250" r="40" fill="rgba(78, 84, 200, 0.1)" />
+  
+  <!-- Microphone base -->
+  <rect x="210" y="250" width="80" height="30" rx="10" ry="10" fill="#4e54c8" />
+  
+  <!-- Microphone stand -->
+  <rect x="240" y="150" width="20" height="100" fill="#4e54c8" />
+  
+  <!-- Microphone head -->
+  <circle cx="250" cy="150" r="40" fill="#4e54c8" filter="url(#glow)" />
+  
+  <!-- Sound waves -->
+  <path d="M250,150 m60,0 a60,60 0 0 1 0,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  <path d="M250,150 m-60,0 a60,60 0 0 0 120,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  
+  <path d="M250,150 m90,0 a90,90 0 0 1 0,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  <path d="M250,150 m-90,0 a90,90 0 0 0 180,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  
+  <path d="M250,150 m120,0 a120,120 0 0 1 0,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  <path d="M250,150 m-120,0 a120,120 0 0 0 240,0" stroke="#29dab5" stroke-width="4" fill="none" />
+  
+  <!-- GRACE text -->
+  <text x="250" y="340" font-size="48" font-weight="bold" text-anchor="middle" fill="#4e54c8" filter="url(#glow)">GRACE</text>
+  
+  <!-- Subtitle -->
+  <text x="250" y="370" font-size="20" text-anchor="middle" fill="#555">Voice Assistant</text>
+</svg> 

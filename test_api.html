@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #log {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            height: 300px;
+            overflow: auto;
+            margin-top: 20px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>GRACE Voice Agent API Test</h1>
+    
+    <div>
+        <button id="test-voice">Test Voice Agent API</button>
+        <button id="test-gesture">Test Hand Gesture API</button>
+        <button id="clear-log">Clear Log</button>
+    </div>
+    
+    <div id="log"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const logElement = document.getElementById('log');
+            
+            // Log function
+            function log(message, type = 'normal') {
+                const entry = document.createElement('div');
+                entry.className = type;
+                entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logElement.appendChild(entry);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            // Clear log
+            document.getElementById('clear-log').addEventListener('click', function() {
+                logElement.innerHTML = '';
+            });
+            
+            // Test Voice Agent API
+            document.getElementById('test-voice').addEventListener('click', async function() {
+                log('Testing Voice Agent API endpoint...');
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/launch', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    log(`Response status: ${response.status} ${response.statusText}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`Response data: ${JSON.stringify(data)}`, 'success');
+                    } else {
+                        log(`Error: ${response.statusText}`, 'error');
+                    }
+                } catch (error) {
+                    log(`Error: ${error.message}`, 'error');
+                    console.error(error);
+                }
+            });
+            
+            // Test Hand Gesture API
+            document.getElementById('test-gesture').addEventListener('click', async function() {
+                log('Testing Hand Gesture API endpoint...');
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/launch-gesture', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    log(`Response status: ${response.status} ${response.statusText}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`Response data: ${JSON.stringify(data)}`, 'success');
+                    } else {
+                        log(`Error: ${response.statusText}`, 'error');
+                    }
+                } catch (error) {
+                    log(`Error: ${error.message}`, 'error');
+                    console.error(error);
+                }
+            });
+            
+            log('API Test page loaded. Click buttons to test API endpoints.');
+        });
+    </script>
+</body>
+</html> 
