@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRACE Logo Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4e54c8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #3a3f9b;
+        }
+        .download {
+            margin-top: 20px;
+        }
+        a {
+            color: #4e54c8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>GRACE Voice Agent Logo Creator</h1>
+    <p>A simple tool to create a logo for the GRACE Voice Agent website</p>
+    
+    <div class="controls">
+        <button id="createLogo">Create Logo</button>
+    </div>
+    
+    <canvas id="logoCanvas" width="200" height="200"></canvas>
+    
+    <div class="download">
+        <a id="downloadLink" download="grace-logo.png" href="#">Download Logo</a>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+        const createButton = document.getElementById('createLogo');
+        const downloadLink = document.getElementById('downloadLink');
+        
+        // Create logo function
+        function createLogo() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#4e54c8');
+            gradient.addColorStop(1, '#29dab5');
+            
+            // Draw circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(canvas.width/2, canvas.height/2, canvas.width/2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add a subtle glow effect
+            ctx.shadowColor = 'rgba(41, 218, 181, 0.5)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw letter G
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 100px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('G', canvas.width/2, canvas.height/2);
+            
+            // Add a small microphone icon
+            ctx.beginPath();
+            ctx.fillStyle = 'white';
+            ctx.rect(canvas.width/2 + 20, canvas.height/2 + 10, 10, 20);
+            ctx.arc(canvas.width/2 + 25, canvas.height/2 + 10, 5, 0, Math.PI, true);
+            ctx.fill();
+            
+            // Remove shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            
+            // Update download link
+            updateDownloadLink();
+        }
+        
+        // Update download link
+        function updateDownloadLink() {
+            downloadLink.href = canvas.toDataURL('image/png');
+        }
+        
+        // Event listeners
+        createButton.addEventListener('click', createLogo);
+        
+        // Create logo on page load
+        createLogo();
+    </script>
+</body>
+</html> 

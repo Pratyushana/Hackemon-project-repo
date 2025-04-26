@@ -14,7 +14,7 @@ from flask_cors import CORS
 import app_launcher
 
 # Create Flask app
-app = Flask(__name__, static_folder='website')
+app = Flask(__name__, static_folder='.')
 CORS(app)  # Enable Cross-Origin Resource Sharing
 
 @app.route('/api/launch', methods=['GET', 'POST'])
@@ -63,12 +63,15 @@ def test_page():
 @app.route('/')
 def index():
     """Serve the website index page."""
-    return send_from_directory('website', 'index.html')
+    return send_file('index.html')
 
 @app.route('/<path:path>')
 def static_files(path):
-    """Serve static files from the website directory."""
-    return send_from_directory('website', path)
+    """Serve static files from the root directory."""
+    if os.path.exists(path):
+        return send_file(path)
+    else:
+        return "File not found", 404
 
 if __name__ == '__main__':
     # Get the port from environment or use default
