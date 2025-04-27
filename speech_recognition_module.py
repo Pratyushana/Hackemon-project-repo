@@ -29,6 +29,7 @@ class SpeechRecognizer:
         self.wake_word_callback = None
         self.listening_thread = None
         self.stop_listening = False
+        self.last_command = ""  # Store commands detected with wake word
         
         # Set recognition parameters for better responsiveness
         self.recognizer.energy_threshold = 300  # Adjust based on your microphone and environment
@@ -160,8 +161,8 @@ class SpeechRecognizer:
             with sr.Microphone() as source:
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.1)
                 try:
-                    # Shorter timeout and phrase time limit for more responsiveness
-                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)  # Increased the phrase time limit to catch the full command
+                    # Longer phrase time limit to catch the wake word plus any command that follows
+                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=5)
                     try:
                         text = self.recognizer.recognize_google(audio).lower()
                         print(f"Heard: {text}")
@@ -171,19 +172,31 @@ class SpeechRecognizer:
                             print(f"Wake word detected: {self.wake_word}")
                             self.wake_word_detected = True
                             
-                            # Extract any text after the wake word for command processing
+                            # If there's additional text after the wake word, pass it as the command
+                            command = ""
+                            if len(text) > len(self.wake_word):
+                                # Extract text after the wake word
+                                wake_word_index = text.find(self.wake_word)
+                                if wake_word_index >= 0:
+                                    command = text[wake_word_index + len(self.wake_word):].strip()
+                                    
+                            # Call the callback with the command if it exists
                             if self.wake_word_callback:
+                                # Store the command for later use
+                                self.last_command = command
                                 self.wake_word_callback()
                                 
                     except sr.UnknownValueError:
                         # Speech not understood, continue listening
                         pass
-                    except sr.RequestError:
+                    except sr.RequestError as e:
                         # API error, wait and retry
-                        time.sleep(0.5)  # Reduced wait time
-                except:
+                        print(f"Request error during wake word detection: {e}")
+                        time.sleep(0.5)
+                except Exception as e:
                     # Timeout or other error, continue
-                    pass
+                    if str(e) != "":  # Only print non-empty errors
+                        print(f"Error in wake word detection: {e}")
                     
             time.sleep(0.05)  # Reduced sleep time for more responsiveness
     
@@ -222,19 +235,37 @@ class SpeechRecognizer:
             print("Listening for command...")
             self.recognizer.adjust_for_ambient_noise(source, duration=self.adjustment_time)
             try:
-                # Use a longer phrase time limit to capture the full command
-                audio = self.recognizer.listen(source, timeout=self.timeout, phrase_time_limit=phrase_time_limit)
-                command = self.transcribe_audio(audio)
-                if command:
-                    print(f"Command recognized: {command}")
-                    # Check the raw text for debugging
-                    print(f"Raw command text: '{command}'")
-                return command
+                # Try multiple times to listen for a command
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        # Use a longer phrase time limit to capture the full command
+                        audio = self.recognizer.listen(source, timeout=self.timeout, phrase_time_limit=phrase_time_limit)
+                        command = self.transcribe_audio(audio)
+                        if command:
+                            print(f"Command recognized: {command}")
+                            # Check the raw text for debugging
+                            print(f"Raw command text: '{command}'")
+                            return command
+                        else:
+                            # If no command recognized, print a message and try again
+                            print(f"No command detected, attempt {attempt+1}/{max_retries}")
+                            if attempt < max_retries - 1:
+                                time.sleep(0.5)  # Short pause before retry
+                    except sr.UnknownValueError:
+                        print(f"Could not understand command, attempt {attempt+1}/{max_retries}")
+                        if attempt < max_retries - 1:
+                            time.sleep(0.5)  # Short pause before retry
+                    except Exception as e:
+                        print(f"Error during transcription attempt {attempt+1}: {e}")
+                        if attempt < max_retries - 1:
+                            time.sleep(0.5)  # Short pause before retry
+                
+                # If we get here, all attempts failed
+                print("Failed to recognize command after multiple attempts")
+                return ""
             except sr.WaitTimeoutError:
                 print("Timeout while waiting for command")
-                return ""
-            except sr.UnknownValueError:
-                print("Could not understand command")
                 return ""
             except sr.RequestError as e:
                 print(f"Error with the speech recognition service: {e}")

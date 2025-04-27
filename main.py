@@ -109,6 +109,10 @@ class GraceVoiceAgent:
             "set volume": self._handle_set_volume_command,
             "generate image": self._handle_generate_image_command,
             "generate": self._handle_generate_image_command,
+            "message": self._handle_message_command,
+            "send message": self._handle_message_command,
+            "text": self._handle_message_command,
+            "whatsapp": self._handle_message_command,
             "shut down": self._handle_shutdown_command,
             "shutdown": self._handle_shutdown_command,
             "shut": self._handle_shutdown_command,
@@ -118,6 +122,11 @@ class GraceVoiceAgent:
             "exit": self._handle_exit_command,
             "quit": self._handle_exit_command,
             "help": self._handle_help_command,
+            "stop": self._handle_stop_command,
+            "stop agent": self._handle_stop_command,
+            "stop voice agent": self._handle_stop_command,
+            "terminate": self._handle_stop_command,
+            "kill agent": self._handle_stop_command,
         }
     
     def start(self):
@@ -157,7 +166,16 @@ class GraceVoiceAgent:
         """Called when wake word is detected"""
         print(f"Wake word '{self.wake_word}' detected!")
         
-        # Listen for the command immediately after wake word with a longer phrase time limit
+        # Check if we already captured a command alongside the wake word
+        command = self.recognizer.last_command
+        
+        if command:
+            print(f"Command detected with wake word: '{command}'")
+            # Process the command immediately
+            self._process_command(command)
+            return
+        
+        # If no command was captured with the wake word, listen for one
         command = self.recognizer.listen_for_command(phrase_time_limit=6)
         print(f"Heard after wake word: '{command}'")
         
@@ -198,7 +216,6 @@ class GraceVoiceAgent:
         else:
             # Regular command processing
             print(f"Regular command: '{command}'")
-            self.tts.speak_async("How can I help you?")
             self._process_command(command)
     
     def _listen_and_process_command(self):
@@ -565,37 +582,29 @@ class GraceVoiceAgent:
         self.is_running = False
     
     def _handle_help_command(self, args=""):
-        """Handle 'help' command
-        
-        Args:
-            args (str, optional): Command arguments
-        """
-        help_text = "Here are the available commands:\n"
-        help_text += "- Open [app/website]: Opens applications or websites\n"
-        help_text += "- Type [text]: Types text\n"
+        """Handle 'help' command"""
+        help_text = "Here are some commands you can use:\n"
+        help_text += "- Open [app name/website]: Opens an application or website\n"
+        help_text += "- Type [text]: Types the specified text\n"
         help_text += "- Dictate: Enters dictation mode for continuous typing\n"
-        help_text += "- Click, Double Click, Right Click: Performs mouse clicks\n"
-        help_text += "- Scroll Up/Down: Scrolls the active window\n"
-        help_text += "- Read Screen: Reads visible text on screen\n"
-        help_text += "- Read Selection: Reads selected text\n"
-        help_text += "- Copy, Paste, Select All: Clipboard operations\n"
-        help_text += "- Undo, Redo: Undo/redo operations\n"
-        help_text += "- Save: Saves the current document\n"
-        help_text += "- Close: Closes the current window or tab\n"
+        help_text += "- Click/Double Click/Right Click: Performs mouse actions\n"
+        help_text += "- Scroll Up/Down: Scrolls the page\n"
+        help_text += "- Read: Captures and reads text from the screen\n"
+        help_text += "- Copy/Paste: Clipboard operations\n"
+        help_text += "- Select All/Undo/Redo/Save: Common keyboard shortcuts\n"
+        help_text += "- Close Window/Tab: Closes the current window or browser tab\n"
         help_text += "- Screenshot: Takes a screenshot\n"
-        help_text += "- Analyze Code: Analyzes selected code\n"
-        help_text += "- Debug Code: Helps debug selected code\n"
-        help_text += "- Change Brightness [1-100]: Adjusts screen brightness\n"
-        help_text += "- Volume Up/Down: Increases or decreases system volume\n"
+        help_text += "- Change Brightness [0-100]: Adjusts screen brightness\n"
+        help_text += "- Volume Up/Down: Adjusts system volume\n"
         help_text += "- Set Volume [1-100]: Sets system volume to a specific level\n"
         help_text += "- Generate Image [prompt]: Creates an AI image from your description\n"
+        help_text += "- Message/Send Message/Text/WhatsApp [contact] [message]: Sends a WhatsApp message to a contact\n"
         help_text += "- Shut Down: Shuts down your computer\n"
-        help_text += "- Exit/Quit: Exits the application\n"
-        help_text += "- Help: Shows this help message\n\n"
-        help_text += "You can also say 'execute [command]' or end any command with 'execute' to run it immediately."
+        help_text += "- Stop: Terminates the voice agent\n"
         
-        print(help_text)
-        self.tts.speak(help_text)
+        help_text += "\nYou can also say 'Execute [command]' to run a command, or end any command with 'Execute' to run it immediately."
+        
+        self.tts.speak_async(help_text)
 
     def _handle_brightness_command(self, args=""):
         """Handle 'change brightness' command
@@ -1170,6 +1179,117 @@ class GraceVoiceAgent:
             print(f"Error in shutdown command: {e}")
             traceback.print_exc()  # Print full traceback
             self.tts.speak_async("I couldn't shut down your computer. Please try again or shut down manually.")
+
+    def _handle_stop_command(self, args=""):
+        """Handle 'stop' command to terminate the voice agent
+        
+        Args:
+            args (str, optional): Command arguments
+        """
+        try:
+            print("=" * 50)
+            print("STOP COMMAND RECEIVED")
+            print("Terminating GRACE Voice Agent")
+            
+            # Announce that we're shutting down
+            self.tts.speak_async("Stopping GRACE Voice Agent. Goodbye!")
+            print("Executing voice agent termination...")
+            
+            # Small delay to allow the voice feedback to be heard
+            time.sleep(1.5)
+            
+            # First perform a normal exit
+            self.is_running = False
+            self.recognizer.stop_wake_word_detection()
+            
+            # Then use process termination to ensure it's fully terminated
+            # We put this in a separate thread so it doesn't block the exit process
+            def terminate_process():
+                time.sleep(2)  # Give main thread time to clean up
+                try:
+                    # Get current process ID
+                    current_pid = os.getpid()
+                    print(f"Terminating process with PID: {current_pid}")
+                    
+                    if platform.system() == "Windows":
+                        # Terminate only this specific process
+                        subprocess.run(f"taskkill /F /PID {current_pid}", shell=True)
+                    elif platform.system() == "Darwin":  # macOS
+                        # Kill this specific process
+                        subprocess.run(f"kill -9 {current_pid}", shell=True)
+                    elif platform.system() == "Linux":
+                        # Kill this specific process
+                        subprocess.run(f"kill -9 {current_pid}", shell=True)
+                except Exception as e:
+                    print(f"Error during termination: {e}")
+            
+            # Start termination thread
+            termination_thread = threading.Thread(target=terminate_process)
+            termination_thread.daemon = True
+            termination_thread.start()
+            
+            print("Stop command executed")
+            
+        except Exception as e:
+            print(f"Error in stop command: {e}")
+            traceback.print_exc()  # Print full traceback
+
+    def _handle_message_command(self, args=""):
+        """Handle 'message' command to send a WhatsApp message
+        
+        Args:
+            args (str, optional): Message content
+        """
+        if not args:
+            self.tts.speak_async("Who would you like to message and what should I say?")
+            return
+            
+        try:
+            # Parse the command for contact name and message
+            # Expected formats:
+            # "message John hello there"
+            # "send message to John hello there"
+            # "text John hello there"
+            # "whatsapp message to John hello there"
+            
+            # Try to find contact name and message content
+            contact = None
+            message = None
+            
+            if " to " in args:
+                # Format: "message to John hello there"
+                parts = args.split(" to ", 1)
+                if len(parts) > 1:
+                    contact_and_message = parts[1].strip()
+                    # Now split the contact and message
+                    contact_message_parts = contact_and_message.split(" ", 1)
+                    if len(contact_message_parts) > 1:
+                        contact = contact_message_parts[0].strip()
+                        message = contact_message_parts[1].strip()
+            else:
+                # Format: "message John hello there"
+                parts = args.split(" ", 1)
+                if len(parts) > 1:
+                    contact = parts[0].strip()
+                    message = parts[1].strip()
+            
+            if not contact or not message:
+                self.tts.speak_async("Please specify both a contact name and message content. For example, 'message John hello there'")
+                return
+                
+            # Confirm what we're about to do
+            self.tts.speak_async(f"Sending WhatsApp message to {contact}: {message}")
+            
+            # Open WhatsApp and send the message
+            result = self.system.send_whatsapp_message(contact, message)
+            
+            if result:
+                self.tts.speak_async(f"Message sent to {contact} successfully")
+            else:
+                self.tts.speak_async("Failed to send the message. Please check WhatsApp is installed correctly")
+        except Exception as e:
+            print(f"Error in message command: {e}")
+            self.tts.speak_async("There was an error sending the WhatsApp message. Please try again.")
 
 
 def main():

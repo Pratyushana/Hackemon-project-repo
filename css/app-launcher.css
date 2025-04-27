@@ -1,6 +1,127 @@
 /**
- * GRACE Voice Agent - App Launcher Styles
+ * GRACE Voice Agent - Application Launcher Styles
  */
+
+/* App Launcher Section Styles */
+.app-launcher {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin: 40px 0;
+    text-align: center;
+}
+
+.app-launcher h2 {
+    margin-bottom: 20px;
+    color: #2d3748;
+}
+
+.app-launcher p {
+    margin-bottom: 25px;
+    color: #4a5568;
+}
+
+/* Launch Buttons */
+.launch-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.launch-btn, 
+.download-btn {
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+}
+
+.launch-btn {
+    background-color: #4a9dff;
+    color: white;
+    border: none;
+}
+
+.launch-btn:hover {
+    background-color: #3d84d6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.launch-btn:active {
+    transform: translateY(0);
+}
+
+.launch-btn.loading {
+    opacity: 0.8;
+    cursor: wait;
+}
+
+.download-btn {
+    background-color: #2d3748;
+    color: white;
+    border: none;
+}
+
+.download-btn:hover {
+    background-color: #1a202c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
+/* Message notification */
+#launch-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#launch-message.success {
+    background-color: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
+}
+
+#launch-message.error {
+    background-color: #fed7d7;
+    color: #822727;
+    border: 1px solid #feb2b2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .launch-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .launch-btn, 
+    .download-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+/* Button icon spacing */
+.launch-btn i, 
+.download-btn i {
+    margin-right: 8px;
+}
 
 /* Loading button state */
 .download-btn.loading, .run-app-btn.loading, .run-gesture-btn.loading {
@@ -99,4 +220,52 @@
     .run-buttons {
         flex-direction: row;
     }
+}
+
+/* Stop button */
+.stop-btn {
+    background-color: #e53e3e !important; 
+    border: 2px solid #e53e3e !important;
+    color: white !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+}
+
+.stop-btn:hover {
+    background-color: #c53030 !important;
+    border-color: #c53030 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(229, 62, 62, 0.4);
+}
+
+.stop-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
+.stop-btn i {
+    margin-right: 8px;
+}
+
+.stop-buttons {
+    margin-top: 15px;
+    width: 100%;
+    display: block;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+    }
+}
+
+.pulse-animation {
+    animation: pulse 1.5s infinite;
 } 

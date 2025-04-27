@@ -56,6 +56,52 @@ class SystemControl:
         """
         app_name = app_name.lower()
         
+        # Special handling for WhatsApp Desktop
+        if app_name == "whatsapp":
+            # Try multiple possible WhatsApp locations
+            whatsapp_locations = [
+                # Microsoft Store version (path may vary)
+                r"C:\Program Files\WindowsApps\5319275A.WhatsAppDesktop_2.2354.0.0_x64__cv1g1gvanyjgm\WhatsApp.exe", 
+                # Standard installation path
+                r"C:\Program Files\WhatsApp\WhatsApp.exe",
+                # Another common location
+                os.path.join(os.environ.get('LOCALAPPDATA', ''), r"WhatsApp\WhatsApp.exe"),
+                # Simple command that might work if WhatsApp is in PATH
+                "WhatsApp.exe"
+            ]
+            
+            for location in whatsapp_locations:
+                try:
+                    print(f"Trying WhatsApp location: {location}")
+                    if os.path.exists(location):
+                        subprocess.Popen(location, shell=True)
+                        self.action_history.append(f"Opened WhatsApp desktop app")
+                        print(f"Successfully launched WhatsApp desktop app")
+                        return True
+                except Exception as e:
+                    print(f"Error with WhatsApp location {location}: {e}")
+                    continue
+            
+            # If reached here, try Windows App URI launch for Microsoft Store apps
+            try:
+                # Use Windows App URI to launch WhatsApp
+                subprocess.Popen(["explorer.exe", "whatsapp:"])
+                self.action_history.append(f"Opened WhatsApp using Windows App URI")
+                print(f"Opened WhatsApp using Windows App URI")
+                return True
+            except Exception as e:
+                print(f"Windows App URI launch failed: {e}")
+                
+            # If that fails, try the generic approach
+            try:
+                os.system("start WhatsApp")
+                self.action_history.append(f"Opened WhatsApp using generic method")
+                print(f"Opened WhatsApp using generic method")
+                return True
+            except Exception as e:
+                print(f"Generic WhatsApp open method failed: {e}")
+                return False
+        
         # Special handling for common websites
         websites = {
             "youtube": "https://youtube.com",
@@ -68,7 +114,7 @@ class SystemControl:
             "gmail": "https://mail.google.com",
             "amazon": "https://amazon.com",
             "netflix": "https://netflix.com",
-            "whatsapp": "https://web.whatsapp.com",
+            # "whatsapp": "https://web.whatsapp.com",  # Removed to use desktop app instead
             "spotify": "https://open.spotify.com",
         }
         
@@ -468,4 +514,189 @@ class SystemControl:
         Returns:
             list: Recent actions
         """
-        return self.action_history[-limit:] if self.action_history else [] 
+        return self.action_history[-limit:] if self.action_history else []
+    
+    def send_whatsapp_message(self, contact, message):
+        """Send a WhatsApp message to a contact
+        
+        Args:
+            contact (str): Contact name or number to send message to
+            message (str): Message to send
+            
+        Returns:
+            bool: Success status
+        """
+        # First try WhatsApp desktop app
+        desktop_result = self._send_whatsapp_message_desktop(contact, message)
+        
+        # If desktop app fails, try WhatsApp Web as fallback
+        if not desktop_result:
+            print("Desktop app failed, trying WhatsApp Web as fallback...")
+            return self._send_whatsapp_message_web(contact, message)
+        
+        return desktop_result
+        
+    def _send_whatsapp_message_desktop(self, contact, message):
+        """Send a WhatsApp message using the desktop application
+        
+        Args:
+            contact (str): Contact name or number
+            message (str): Message to send
+            
+        Returns:
+            bool: Success status
+        """
+        # First make sure WhatsApp is open
+        self.open_application("whatsapp")
+        
+        # Wait longer for WhatsApp to load fully
+        time.sleep(8)
+        
+        try:
+            # Get screen size to calculate relative positions
+            screen_width, screen_height = pyautogui.size()
+            
+            # Calculate positions as percentages of screen size
+            # Search box is usually in the top-left portion of WhatsApp
+            search_x = int(screen_width * 0.2)  # 20% from left
+            search_y = int(screen_height * 0.1)  # 10% from top
+            
+            # Message box is usually in the bottom portion of WhatsApp
+            message_x = int(screen_width * 0.5)  # Center horizontally
+            message_y = int(screen_height * 0.8)  # 80% from top (near bottom)
+            
+            # Click on the search bar
+            pyautogui.moveTo(search_x, search_y, duration=0.5)
+            pyautogui.click()
+            time.sleep(1)
+            
+            # Type the contact name
+            pyautogui.write(contact, interval=0.1)
+            time.sleep(2)
+            
+            # Press Down and Enter to select the first contact
+            pyautogui.press('down')
+            time.sleep(0.5)
+            pyautogui.press('enter')
+            time.sleep(2)
+            
+            # Click on the message box
+            pyautogui.moveTo(message_x, message_y, duration=0.5)
+            pyautogui.click()
+            time.sleep(1)
+            
+            # Type and send the message
+            pyautogui.write(message, interval=0.05)
+            pyautogui.press('enter')
+            
+            self.action_history.append(f"Sent WhatsApp message to {contact}")
+            print(f"Successfully sent WhatsApp message to {contact}")
+            return True
+            
+        except Exception as e:
+            print(f"Error sending WhatsApp message via desktop app: {e}")
+            
+            # Try alternative method using clipboard for the message
+            try:
+                # Try to locate and click the message box by tab navigation
+                pyautogui.hotkey('ctrl', 'f')  # Focus search
+                time.sleep(0.5)
+                pyautogui.write(contact, interval=0.1)
+                time.sleep(1)
+                pyautogui.press('enter')
+                time.sleep(1)
+                
+                # Try to focus the message area with tab
+                pyautogui.press('tab')
+                time.sleep(0.5)
+                
+                # Send message using clipboard
+                pyperclip.copy(message)
+                pyautogui.hotkey('ctrl', 'v')
+                time.sleep(0.5)
+                pyautogui.press('enter')
+                
+                self.action_history.append(f"Sent WhatsApp message to {contact} (alternative method)")
+                print(f"Successfully sent WhatsApp message to {contact} using alternative method")
+                return True
+            except Exception as alt_error:
+                print(f"Alternative desktop method also failed: {alt_error}")
+                return False
+    
+    def _send_whatsapp_message_web(self, contact, message):
+        """Send a WhatsApp message using WhatsApp Web
+        
+        Args:
+            contact (str): Contact name or phone number
+            message (str): Message to send
+            
+        Returns:
+            bool: Success status
+        """
+        try:
+            # Check if contact is a phone number
+            is_phone_number = all(c.isdigit() or c == '+' for c in contact)
+            
+            if is_phone_number:
+                # For phone numbers, we can use the direct API
+                # Make sure phone number is in international format without + sign
+                if contact.startswith('+'):
+                    contact = contact[1:]
+                
+                # Open WhatsApp Web with the phone number
+                url = f"https://web.whatsapp.com/send?phone={contact}&text={message}"
+                webbrowser.open(url)
+                
+                # Wait for page to load
+                time.sleep(10)
+                
+                # Press Enter to send the message
+                pyautogui.press('enter')
+                
+                self.action_history.append(f"Sent WhatsApp Web message to {contact}")
+                print(f"Successfully sent WhatsApp Web message to {contact}")
+                return True
+            else:
+                # For contact names, we need to open WhatsApp Web, search and select the contact
+                webbrowser.open("https://web.whatsapp.com")
+                time.sleep(10)  # Wait for WhatsApp Web to load
+                
+                # Get screen dimensions
+                screen_width, screen_height = pyautogui.size()
+                
+                # Search box is typically in the top left
+                search_x = int(screen_width * 0.15)
+                search_y = int(screen_height * 0.1)
+                
+                # Click on search
+                pyautogui.moveTo(search_x, search_y, duration=0.5)
+                pyautogui.click()
+                time.sleep(1)
+                
+                # Type contact name
+                pyautogui.write(contact, interval=0.1)
+                time.sleep(2)
+                
+                # Click on the first result (assuming it's the correct contact)
+                first_result_y = int(screen_height * 0.2)
+                pyautogui.moveTo(search_x, first_result_y, duration=0.5)
+                pyautogui.click()
+                time.sleep(2)
+                
+                # Type message in the message box (typically at the bottom)
+                message_y = int(screen_height * 0.9)
+                pyautogui.moveTo(int(screen_width * 0.5), message_y, duration=0.5)
+                pyautogui.click()
+                time.sleep(1)
+                
+                # Type and send message
+                pyautogui.write(message, interval=0.05)
+                pyautogui.press('enter')
+                
+                self.action_history.append(f"Sent WhatsApp Web message to {contact}")
+                print(f"Successfully sent WhatsApp Web message to {contact}")
+                return True
+                
+        except Exception as e:
+            print(f"Error sending WhatsApp message via web: {e}")
+            return False 

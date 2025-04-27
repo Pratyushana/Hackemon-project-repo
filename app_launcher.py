@@ -12,6 +12,7 @@ import sys
 import subprocess
 import platform
 import traceback
+import time
 
 def launch_app():
     """Launch the GRACE Voice Agent application."""
@@ -28,26 +29,44 @@ def launch_app():
         print(f"Error: Could not find {main_script}")
         return False
     
+    # Check for the .env file and create it if it doesn't exist
+    env_file = os.path.join(script_dir, ".env")
+    if not os.path.exists(env_file):
+        print("Creating .env file with default API key")
+        with open(env_file, "w") as f:
+            f.write("# GRACE Voice Agent Environment Variables\n\n")
+            f.write("# Google Gemini API Key\n")
+            f.write("GEMINI_KEY=AIzaSyD1VukpoEj4XVryusQckN7JnNl9y2EoQNM\n\n")
+            f.write("# OpenAI API Key (optional, for Whisper)\n")
+            f.write("# OPENAI_KEY=your_openai_api_key_here\n\n")
+            f.write("# Stability AI API Key (for image generation)\n")
+            f.write("# STABILITY_KEY=your_stability_api_key_here\n\n")
+            f.write("# HuggingFace Token (for image generation and AI features)\n")
+            f.write("# HF_TOKEN=your_huggingface_token_here\n")
+    
     try:
-        # Launch the application
-        if platform.system() == 'Windows':
-            # Use pythonw.exe on Windows to avoid showing a console window
-            python_exe = sys.executable.replace('python.exe', 'pythonw.exe')
-            if not os.path.exists(python_exe):
-                # Fall back to regular python if pythonw doesn't exist
-                python_exe = sys.executable
-                
-            subprocess.Popen([python_exe, main_script], 
-                             creationflags=subprocess.CREATE_NO_WINDOW)
-        else:
-            # Linux/Mac - launch in background
-            subprocess.Popen([sys.executable, main_script], 
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL,
-                             start_new_session=True)
+        # Always use visible console window to see errors when launched from website
+        python_exe = sys.executable
         
-        print("GRACE Voice Agent launched successfully!")
-        return True
+        # Show what we're running
+        print(f"Using Python executable: {python_exe}")
+        print(f"Command: {python_exe} {main_script}")
+        
+        # Launch in a visible console window
+        if platform.system() == 'Windows':
+            # Start in a visible command window to see errors
+            os.system(f'start cmd /K "cd {script_dir} && {python_exe} {main_script}"')
+            
+            # Wait a bit to give the process time to start
+            time.sleep(1)
+            print("GRACE Voice Agent launched successfully!")
+            return True
+        else:
+            # For Linux/Mac, open in a terminal
+            os.system(f'gnome-terminal -- {python_exe} {main_script}')
+            time.sleep(1)
+            print("GRACE Voice Agent launched successfully!")
+            return True
     except Exception as e:
         print(f"Error launching GRACE Voice Agent: {e}")
         traceback.print_exc()
@@ -80,28 +99,28 @@ def launch_hand_gesture():
         return False
     
     try:
-        # Launch the hand gesture module
-        if platform.system() == 'Windows':
-            # Use pythonw.exe on Windows to avoid showing a console window
-            python_exe = sys.executable.replace('python.exe', 'pythonw.exe')
-            if not os.path.exists(python_exe):
-                # Fall back to regular python if pythonw doesn't exist
-                python_exe = sys.executable
-            
-            print(f"Using Python executable: {python_exe}")
-            print(f"Command: {python_exe} {gesture_script}")
-            
-            subprocess.Popen([python_exe, gesture_script], 
-                             creationflags=subprocess.CREATE_NO_WINDOW)
-        else:
-            # Linux/Mac - launch in background
-            subprocess.Popen([sys.executable, gesture_script], 
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL,
-                             start_new_session=True)
+        # Always use visible console window to see errors when launched from website
+        python_exe = sys.executable
         
-        print("Hand Gesture module launched successfully!")
-        return True
+        # Show what we're running
+        print(f"Using Python executable: {python_exe}")
+        print(f"Command: {python_exe} {gesture_script}")
+        
+        # Launch in a visible console window
+        if platform.system() == 'Windows':
+            # Start in a visible command window to see errors
+            os.system(f'start cmd /K "cd {script_dir} && {python_exe} {gesture_script}"')
+            
+            # Wait a bit to give the process time to start
+            time.sleep(1)
+            print("Hand Gesture module launched successfully!")
+            return True
+        else:
+            # For Linux/Mac, open in a terminal
+            os.system(f'gnome-terminal -- {python_exe} {gesture_script}')
+            time.sleep(1)
+            print("Hand Gesture module launched successfully!")
+            return True
     except Exception as e:
         print(f"Error launching Hand Gesture module: {e}")
         traceback.print_exc()
